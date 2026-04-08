@@ -1,0 +1,59 @@
+name: Backend Smoke Test
+
+on:
+  push:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-smoke.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-smoke.yml"
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      PORT: 3001
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GEMINI_MODEL: gemini-2.5-flash
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Type check
+        run: npm run check
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build backend
+        run: npm run build
+
+      - name: Start backend
+        run: npm start &
+
+      - name: Wait for backend
+        run: |
+          for i in {1..20}; do
+            if curl --silent --fail http://127.0.0.1:${PORT}/health >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Backend did not become ready in time."
+          exit 1
+
+      - name: Smoke check health endpoint
+        run: curl --fail http://127.0.0.1:${PORT}/health

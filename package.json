@@ -1,0 +1,14 @@
+{
+  "name": "llm-testing-framework",
+  "private": true,
+  "workspaces": [
+    "backend"
+  ],
+  "scripts": {
+    "backend:dev": "npm run dev --workspace backend",
+    "backend:build": "npm run build --workspace backend",
+    "backend:start": "npm run start --workspace backend",
+    "backend:test": "npm run test --workspace backend",
+    "backend:check": "npm run check --workspace backend"
+  }
+}
